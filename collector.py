@@ -12,6 +12,18 @@ import traceback as tb
 import libtorrent as lt
 import MySQLdb
 
+class DownloadParam(object):
+    time_out = 40
+    def __init__(self):
+       self.start_time = -1
+
+    def is_timeout(self):
+        if(time.time() - self.start_time > time_out):
+            return True
+        else:
+            return False
+            
+
 
 class Collector(object):
     '''
@@ -36,6 +48,7 @@ class Collector(object):
     _info_hash_set = {}
     _current_meta_count = 0
     _meta_list = {}
+    _download_meta_params = {}
 
     def __init__(self,
                  session_nums=50,
@@ -49,12 +62,12 @@ class Collector(object):
         self._result_file = result_file
         self._stat_file = stat_file
         self._backup_result()
+        self.download_session = lt.session()
+        self.download_session.add_dht_router('router.bittorrent.com', 6881)
+        self.download_session.add_dht_router('router.utorrent.com', 6881)
+        self.download_session.add_dht_router('router.bitcomet.com', 6881)
+        self.download_session.add_dht_router('dht.transmissionbt.com', 6881)
 
-        try:
-            with open(self._result_file, 'rb') as f:
-                self._meta_list = json.load(f)
-        except Exception as err:
-            pass
 
     def _backup_result(self):
         back_file = '%s_%s' % (time.strftime('%Y%m%d'), self._result_file)
@@ -90,6 +103,7 @@ class Collector(object):
                 else:
 		    self.saveHashInfo(info_hash)
                     self._meta_list[info_hash] = 1
+                    self.get_torrent_info(self.download_session, info_hash)
                     self._current_meta_count += 1
             elif isinstance(alert, lt.dht_get_peers_alert):
                 info_hash = alert.info_hash.to_string().encode('hex')
@@ -99,6 +113,7 @@ class Collector(object):
 		    self.saveHashInfo(info_hash)
                     self._infohash_queue_from_getpeers.append(info_hash)
                     self._meta_list[info_hash] = 1
+                    self.get_torrent_info(self.download_session, info_hash)
                     self._current_meta_count += 1
 
     # 创建 session 对象
@@ -123,13 +138,60 @@ class Collector(object):
             session.set_settings(settings)
             self._sessions.append(session)
         return self._sessions
+    
+    def get_torrent(self, ses, hash_info):
+        '''
+        Add hash_info to session, begin down load torrent
+        '''
+        if (self._download_meta_params.has_key(hash_info) is True):
+            print "info hash" + hash_info + "already downloading"
+            return
+
+        download_param = DownloadParam()
+        download_param.start_time = time.time()
+
+        self._download_meta_params[hash_info] = download_param
+
+        magnet='magnet:?xt=urn:btih:'+hash_info
+        print "Add magnet ", magnet
+        tempdir = tempfile.mkdtemp()
+        params = {
+            'save_path': tempdir,
+            'duplicate_is_error': True,
+            'storage_mode': lt.storage_mode_t(2),
+            'paused': False,
+            'auto_managed': True,
+            'duplicate_is_error': True
+        }
+
+        lt.add_magnet_uri(ses, magnet, params)
+
+    
+    def check_download_torrent(self):
+        handles = self.download_session.get_torrents() 
+        for handle in handles:
+            if(not handle.has_metadata()):
+                if(self._download_meta_params.has_key(handle.info_hash()) ):
+                    p =  self._download_meta_params[handle.info_hash()]
+                    if (p.is_timeout()):
+                        self.download_session.remove_torrent(handle)
+                        self._download_meta_params.pop(handle.info_hash())
+                        print "remove time out ",handle.info_hash()
+            else:
+                if(self._download_meta_params.has_key(handle.info_hash()) ):
+                    self.download_session.remove_torrent(handle)
+                    self._download_meta_params.pop(handle.info_hash())
+                torinfo = handle.get_torrent_info()
+                torfile = lt.create_torrent(torinfo)
+                print "get torrent name "+handle.info_hash()+ " ====> " + torinfo.name()
+
+
 
     # 添加磁力链接
     def add_magnet(self, link):
         # 创建临时下载目录
         if not os.path.isdir('collections'):
             os.mkdir('collections')
-
         count = 0
         for session in self._sessions:
             params = {'save_path': os.path.join(os.curdir,
@@ -144,6 +206,8 @@ class Collector(object):
             session.async_add_torrent(params)
             count += 1
 
+
+
     def start_work(self):
         # 清理屏幕
         begin_time = time.time()
@@ -157,6 +221,7 @@ class Collector(object):
                 show_interval -= 1
                 continue
             show_interval = self._delay_interval
+            self.check_download_torrent()
 
             # 统计信息显示
             show_content = ['torrents:']
@@ -178,34 +243,21 @@ class Collector(object):
                                 len(self._meta_list))
             show_content.append('\n')
 
-            # 存储运行状态到文件
-#            try:
-#                with open(self._stat_file, 'wb') as f:
-#                    f.write('\n'.join(show_content))
-#                with open(self._result_file, 'wb') as f:
-#                    json.dump(self._meta_list, f)
-#            except Exception as err:
-#                pass
 
-            # 测试是否到达退出时间
-#            if interval >= self._exit_time:
-#                # stop
-#                break
 
-            # 每天结束备份结果文件
-#            self._backup_result()
-
-        # 销毁p2p客户端
+	def destroy_sessions(self):
+		'''
+        销毁p2p客户端
+		'''
         for session in self._sessions:
             torrents = session.get_torrents()
             for torrent in torrents:
                 session.remove_torrent(torrent)
 
+
     def saveHashInfo(self, info_hash):
         '''
-        with open(name+"_hash_info.txt",'a') as file:
-            for hash in self.hashes.keys():
-                file.write(hash.encode('hex')+"\n\r")
+		save info to database
         '''
         try:
             conn=MySQLdb.connect(host='127.0.0.1',user='root',passwd='123456',port=3306,charset="UTF8")
@@ -224,14 +276,17 @@ class Collector(object):
             print 'mysql error %d:%s'%(e.args[0],e.args[1])
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        print 'argument err:'
-        print '\tpython collector.py result.json collector.state\n'
-        sys.exit(-1)
+    #if len(sys.argv) != 3:
+    #    print 'argument err:'
+    #    print '\tpython collector.py result.json collector.state\n'
+    #    sys.exit(-1)
 
-    result_file = sys.argv[1]
-    stat_file = sys.argv[2]
+    #result_file = sys.argv[1]
+    #stat_file = sys.argv[2]
 
+    result_file = 'test'
+
+    stat_file = 'test2'
     # 创建采集对象
     sd = Collector(session_nums=20,
                    result_file=result_file,
