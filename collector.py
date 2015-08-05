@@ -178,7 +178,6 @@ class Collector(object):
                         print "remove time out ",handle.info_hash()
             else:
                 if(self._download_meta_params.has_key(handle.info_hash()) ):
-                    self.download_session.remove_torrent(handle)
                     self._download_meta_params.pop(handle.info_hash())
                 torinfo = handle.get_torrent_info()
                 torfile = lt.create_torrent(torinfo)
@@ -188,6 +187,7 @@ class Collector(object):
                 for i in range(num_file):
                     f = torinfo.file_at(i)
                     print "path",f.path, " size ", str(f.size) 
+                self.download_session.remove_torrent(handle)
                 
 
 
