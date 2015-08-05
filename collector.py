@@ -102,7 +102,6 @@ class Collector(object):
                 if info_hash in self._meta_list:
                     self._meta_list[info_hash] += 1
                 else:
-		    self.saveHashInfo(info_hash)
                     self._meta_list[info_hash] = 1
                     self.get_torrent(self.download_session, info_hash)
                     self._current_meta_count += 1
@@ -111,7 +110,6 @@ class Collector(object):
                 if info_hash in self._meta_list:
                     self._meta_list[info_hash] += 1
                 else:
-		    self.saveHashInfo(info_hash)
                     self._infohash_queue_from_getpeers.append(info_hash)
                     self._meta_list[info_hash] = 1
                     self.get_torrent(self.download_session, info_hash)
