@@ -14,12 +14,12 @@ import libtorrent as lt
 import MySQLdb
 
 class DownloadParam(object):
-    time_out = 40
+    _time_out = 40
     def __init__(self):
        self.start_time = -1
 
     def is_timeout(self):
-        if(time.time() - self.start_time > time_out):
+        if(time.time() - self.start_time > self._time_out):
             return True
         else:
             return False
