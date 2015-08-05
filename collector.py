@@ -183,28 +183,12 @@ class Collector(object):
                 torinfo = handle.get_torrent_info()
                 torfile = lt.create_torrent(torinfo)
                 print "get torrent name "+str(handle.info_hash())+ " ====> " + torinfo.name()
-
-
-
-    # 添加磁力链接
-    def add_magnet(self, link):
-        # 创建临时下载目录
-        if not os.path.isdir('collections'):
-            os.mkdir('collections')
-        count = 0
-        for session in self._sessions:
-            params = {'save_path': os.path.join(os.curdir,
-                                                'collections',
-                                                'magnet_' + str(count)),
-                      'storage_mode':
-                      lt.storage_mode_t.storage_mode_sparse,
-                      'paused': False,
-                      'auto_managed': True,
-                      'duplicate_is_error': True,
-                      'url': link}
-            session.async_add_torrent(params)
-            count += 1
-
+                num_file = torinfo.num_files()
+                print "num_files ", num_file
+                for i in range(num_file):
+                    f = torinfo.file_at(i)
+                    print "path",f.path, " size ", str(f.size) 
+                
 
 
     def start_work(self):
@@ -254,7 +238,7 @@ class Collector(object):
                 session.remove_torrent(torrent)
 
 
-    def saveHashInfo(self, info_hash):
+    def saveHashInfo(self, info_hash, torrent_content):
         '''
 		save info to database
         '''
