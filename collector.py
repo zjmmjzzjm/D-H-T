@@ -184,7 +184,7 @@ class Collector(object):
                     self._download_meta_params.pop(handle.info_hash())
                 torinfo = handle.get_torrent_info()
                 torfile = lt.create_torrent(torinfo)
-                print "get torrent name "+handle.info_hash()+ " ====> " + torinfo.name()
+                print "get torrent name "+str(handle.info_hash())+ " ====> " + torinfo.name()
 
 
 
