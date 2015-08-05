@@ -103,7 +103,7 @@ class Collector(object):
                 else:
 		    self.saveHashInfo(info_hash)
                     self._meta_list[info_hash] = 1
-                    self.get_torrent_info(self.download_session, info_hash)
+                    self.get_torrent(self.download_session, info_hash)
                     self._current_meta_count += 1
             elif isinstance(alert, lt.dht_get_peers_alert):
                 info_hash = alert.info_hash.to_string().encode('hex')
@@ -113,7 +113,7 @@ class Collector(object):
 		    self.saveHashInfo(info_hash)
                     self._infohash_queue_from_getpeers.append(info_hash)
                     self._meta_list[info_hash] = 1
-                    self.get_torrent_info(self.download_session, info_hash)
+                    self.get_torrent(self.download_session, info_hash)
                     self._current_meta_count += 1
 
     # 创建 session 对象
