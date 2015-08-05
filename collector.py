@@ -169,19 +169,20 @@ class Collector(object):
     def check_download_torrent(self):
         handles = self.download_session.get_torrents() 
         for handle in handles:
+            info_hash = handle.info_hash().to_string().encode('hex')
             if(not handle.has_metadata()):
-                if(self._download_meta_params.has_key(handle.info_hash()) ):
-                    p =  self._download_meta_params[handle.info_hash()]
+                if(self._download_meta_params.has_key(info_hash) ):
+                    p =  self._download_meta_params[info_hash]
                     if (p.is_timeout()):
                         self.download_session.remove_torrent(handle)
-                        self._download_meta_params.pop(handle.info_hash())
-                        print "remove time out ",handle.info_hash()
+                        self._download_meta_params.pop(info_hash)
+                        print "remove time out ",info_hash
             else:
-                if(self._download_meta_params.has_key(handle.info_hash()) ):
-                    self._download_meta_params.pop(handle.info_hash())
+                if(self._download_meta_params.has_key(info_hash) ):
+                    self._download_meta_params.pop(info_hash)
                 torinfo = handle.get_torrent_info()
                 torfile = lt.create_torrent(torinfo)
-                print "get torrent name "+str(handle.info_hash())+ " ====> " + torinfo.name()
+                print "get torrent name "+info_hash+ " ====> " + torinfo.name()
                 num_file = torinfo.num_files()
                 print "num_files ", num_file
                 for i in range(num_file):
