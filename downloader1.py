@@ -51,6 +51,7 @@ def download(filename):
         return
     _url = "http://torrage.com/sync/" + filename
     urllib.urlretrieve(_url, savefile, reporthook)
+    print "download finish " + _url
 
 
 #download()
@@ -74,20 +75,20 @@ def downloadTorrent(txtFileName):
             return
 
         item = item.strip("\r\n")
-        _saveTorrentName = torrentDir + item + ".zip"
+        _saveTorrentName = torrentDir + item + ".torrent"
         if os.path.exists(_saveTorrentName):
             continue
         url = "http://torrage.com/torrent/" + item.upper() + ".torrent"
         print("downloading torrent url:" + url + " Save: " + _saveTorrentName)
         try:
-            _content = urllib.request.urlopen(url).read()
+            _content = urllib.urlopen(url).read()
             stats.totalBytes = stats.totalBytes + len(_content)
             open(_saveTorrentName, "wb").write(_content)
         except KeyboardInterrupt as e:
             print("Keyboard interupted" + str(e))
             conf.bExit = True
-        except:
-            print("download torrent failed")
+        except Exception, e:
+            print("download torrent failed" + str(e))
             continue
 
 
@@ -112,7 +113,8 @@ def threadFunc(thread_index):
         try:
             if conf.bExit:
                 return
-            if i%max_threads == thread_index:
+            if not i%max_threads == thread_index:
+                print "thread " + str(thread_index) + " ignore date " + str(i)
                 continue
             fn = makeUrl(i)
             if conf.downUrl:
