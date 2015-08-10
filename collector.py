@@ -85,7 +85,7 @@ class Collector(object):
             for  info_hash in self._meta_list:
                 f.write(info_hash)
 
-    def _insert_info_hash(self):
+    def _insert_info_hash(self, info_hash):
         back_file = '%s_%s' % (time.strftime('%Y%m%d'), self._result_file)
         if not os.path.isfile(back_file):
             try :
