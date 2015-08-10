@@ -78,6 +78,23 @@ class Collector(object):
                        time.strftime('%Y%m%d'),
                        self._result_file))
 
+    def _backup_all_info_hash(self):
+        back_file = '%s_%s' % (time.strftime('%Y%m%d'), self._result_file)
+        if not os.path.isfile(back_file):
+            f = open(back_file, 'w')
+            for  info_hash in self._meta_list:
+                f.write(info_hash)
+
+    def _insert_info_hash(self):
+        back_file = '%s_%s' % (time.strftime('%Y%m%d'), self._result_file)
+        if not os.path.isfile(back_file):
+            try :
+                f = open(back_file, 'w')
+                f.write(info_hash)
+                f.close()
+            except Exception, e:
+                print "catch excepton: " + str(e)
+
     def _get_runtime(self, interval):
         day = interval / (60*60*24)
         interval = interval % (60*60*24)
@@ -142,6 +159,8 @@ class Collector(object):
         '''
         Add hash_info to session, begin down load torrent
         '''
+
+        self._insert_info_hash(hash_info)
         if (self._download_meta_params.has_key(hash_info) is True):
             print "info hash" + hash_info + "already downloading"
             return
@@ -181,16 +200,19 @@ class Collector(object):
                 if(self._download_meta_params.has_key(info_hash) ):
                     self._download_meta_params.pop(info_hash)
                 torinfo = handle.get_torrent_info()
-                torfile = lt.create_torrent(torinfo)
-                print "get torrent name "+info_hash+ " ====> " + torinfo.name()
-                num_file = torinfo.num_files()
-                print "num_files ", num_file
-                for i in range(num_file):
-                    f = torinfo.file_at(i)
-                    print "path",f.path, " size ", str(f.size) 
+                content = self.dump_torrent_info(torinfo)
                 self.download_session.remove_torrent(handle)
                 
+    def dump_torrent_info(self,info):
+        content = info.name()  + "\n"
+        num_file = info.num_files()
+        content += str(num_file)
+        for i in range(num_file):
+            f = info.file_at(i)
+            content += f.path + ' ' + str(f.size) + "\n"
+        print "",content 
 
+        return content
 
     def start_work(self):
         # 清理屏幕
@@ -248,7 +270,7 @@ class Collector(object):
             cur=conn.cursor()
             conn.select_db('dht')
 	    hash_hex=info_hash
-	    sql="insert into hash_info(hash,info) values('%s','%s')"%(hash_hex,"")
+	    sql="insert into hash_info(hash,info) values('%s','%s')"%(hash_hex,torrent_content)
 	    try:
 	        cur.execute(sql)
 	        conn.commit()
