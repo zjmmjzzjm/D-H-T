@@ -206,7 +206,7 @@ class Collector(object):
     def dump_torrent_info(self,info):
         content = info.name()  + "\n"
         num_file = info.num_files()
-        content += str(num_file)
+        content += str(num_file) + "\n"
         for i in range(num_file):
             f = info.file_at(i)
             content += f.path + ' ' + str(f.size) + "\n"
