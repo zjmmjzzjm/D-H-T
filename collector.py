@@ -201,6 +201,7 @@ class Collector(object):
                     self._download_meta_params.pop(info_hash)
                 torinfo = handle.get_torrent_info()
                 content = self.dump_torrent_info(torinfo)
+                self.saveHashInfo(info_hash, content)
                 self.download_session.remove_torrent(handle)
                 
     def dump_torrent_info(self,info):
