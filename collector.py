@@ -87,13 +87,12 @@ class Collector(object):
 
     def _insert_info_hash(self, info_hash):
         back_file = '%s_%s' % (time.strftime('%Y%m%d'), self._result_file)
-        if not os.path.isfile(back_file):
-            try :
-                f = open(back_file, 'a')
-                f.write(info_hash)
-                f.close()
-            except Exception, e:
-                print "catch excepton: " + str(e)
+        try :
+            f = open(back_file, 'a')
+            f.write(info_hash)
+            f.close()
+        except Exception, e:
+            print "catch excepton: " + str(e)
 
     def _get_runtime(self, interval):
         day = interval / (60*60*24)
