@@ -89,7 +89,7 @@ class Collector(object):
         back_file = '%s_%s' % (time.strftime('%Y%m%d'), self._result_file)
         try :
             f = open(back_file, 'a')
-            f.write(info_hash)
+            f.write(info_hash+'\n')
             f.close()
         except Exception, e:
             print "catch excepton: " + str(e)
