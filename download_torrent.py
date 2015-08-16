@@ -21,10 +21,14 @@ class TorrentDownloader(object):
 		pass
 
 	def download_from_thunder(self,info_hash):
+            try:
 		info_hash = info_hash.upper()
 		url = self._thunder_url + '/' + info_hash[0:2] + '/' + info_hash[-2:None] + '/' +info_hash + '.torrent'
 		print "downloading: " + url
 		filename = self.torrent_dir + '/'  + info_hash + '.torrent'
+                if os.path.isfile(filename) : 
+                    print " file %s exists" % filename
+                    return 
 		ret = urllib.urlretrieve(url,filename, _download_call_back)
 		size = os.path.getsize(filename)
 		if(size < 300):
@@ -32,8 +36,11 @@ class TorrentDownloader(object):
 			print "download " + filename + " Failed."
 		else:
 			print 'download ' + filename + " OK."
-		pass
 
+            except Exception, e:
+                print " down load except " + str(e)
+            finally:
+                print " down load finish"
 
 	def download_from_btdepot(self,info_hash):
 		pass
@@ -59,8 +66,8 @@ if __name__ == '__main__':
 	info_hash_list = [l.strip() for l in info_hash_file.readlines()]
 	info_hash_file.close()
 	
-	for l in info_hash_list:
-		print "info_hash: " + l + " len " + str(len(l))
+	#for l in info_hash_list:
+		#print "info_hash: " + l + " len " + str(len(l))
 
 	max_treads = 5
 	group_size = len(info_hash_list) / max_treads
