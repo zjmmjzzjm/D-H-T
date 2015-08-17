@@ -3,19 +3,24 @@ import time
 
 import sys
 
-ses = lt.session()
-ses.listen_on(6881, 6891)
+if __name__ == "__main__":
 
-e = lt.bdecode(open(sys.argv[1], 'rb').read())
-info = lt.torrent_info(e)
+    try:
+        ses = lt.session()
+        ses.listen_on(6881, 6891)
 
-print "info_hash " + info.info_hash().to_string().encode("HEX")
+        e = lt.bdecode(open(sys.argv[1], 'rb').read())
+        info = lt.torrent_info(e)
 
-num_file = info.num_files()
-print "num_files ", num_file
-for i in range(num_file):
-    f = info.file_at(i)
-    print "path",f.path, " size ", str(f.size) 
+        print "info_hash " + info.info_hash().to_string().encode("HEX")
+
+        num_file = info.num_files()
+        print "num_files ", num_file
+        for i in range(num_file):
+            f = info.file_at(i)
+            print "path",f.path, " size ", str(f.size) 
+    except exception, e:
+        pass
 #pass
 #params = { save_path: '.', \
 #        storage_mode: lt.storage_mode_t.storage_mode_sparse, \

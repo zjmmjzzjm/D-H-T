@@ -9,6 +9,7 @@ import tempfile
 import urllib2
 import urllib
 import threading
+import socket 
 
 
 def _download_call_back(blocknum, blocksize, totalsize):
@@ -53,12 +54,19 @@ def download_thread(index, info_hash_list):
 	
 	print "Thread " + str(index) + " stopped"
 
+def init_socket():
+    socket.setdefaulttimeout(10)
 
 if __name__ == '__main__':
 
 	if(len(sys.argv) < 2):
 		print 'Usage : download_torrent.py info_hash_list'
 		sys.exit(-1)
+
+        init_socket()
+        names = os.path.basename(sys.argv[1])
+        names = names.split(".")
+        torrent_dir.torrent_dir = TorrentDownloader.torrent_dir +  "/" + names[0]
 
 	if not os.path.exists(TorrentDownloader.torrent_dir):
 		os.mkdir(TorrentDownloader.torrent_dir)
@@ -72,7 +80,6 @@ if __name__ == '__main__':
 	max_treads = 5
 	group_size = len(info_hash_list) / max_treads
 	print "group_size " + str(group_size)
-	pass
 		
 	threads = []
 	for i in range(max_treads):

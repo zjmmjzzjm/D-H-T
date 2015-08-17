@@ -159,6 +159,7 @@ class Collector(object):
         Add hash_info to session, begin down load torrent
         '''
 
+        return
         self._insert_info_hash(hash_info)
         if (self._download_meta_params.has_key(hash_info) is True):
             print "info hash" + hash_info + "already downloading"
@@ -265,6 +266,7 @@ class Collector(object):
         '''
 		save info to database
         '''
+        return
         try:
             conn=MySQLdb.connect(host='127.0.0.1',user='root',passwd='123456',port=3306,charset="UTF8")
             cur=conn.cursor()
