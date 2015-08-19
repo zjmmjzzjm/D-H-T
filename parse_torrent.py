@@ -9,14 +9,8 @@ if __name__ == "__main__":
         ses = lt.session()
         ses.listen_on(6881, 6891)
 
-<<<<<<< HEAD
-print "info_hash " + info.info_hash().to_string().encode("HEX")
-print "torrent info name " + info.name()
-=======
         e = lt.bdecode(open(sys.argv[1], 'rb').read())
         info = lt.torrent_info(e)
->>>>>>> 968e2dece0e623ca6b1ba5ec307977670fca4956
-
         print "info_hash " + info.info_hash().to_string().encode("HEX")
 
         num_file = info.num_files()
