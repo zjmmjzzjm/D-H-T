@@ -10,6 +10,7 @@ e = lt.bdecode(open(sys.argv[1], 'rb').read())
 info = lt.torrent_info(e)
 
 print "info_hash " + info.info_hash().to_string().encode("HEX")
+print "torrent info name " + info.name()
 
 num_file = info.num_files()
 print "num_files ", num_file
