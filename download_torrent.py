@@ -9,6 +9,7 @@ import tempfile
 import urllib2
 import urllib
 import threading
+import socket 
 
 
 def _download_call_back(blocknum, blocksize, totalsize):
@@ -21,10 +22,14 @@ class TorrentDownloader(object):
 		pass
 
 	def download_from_thunder(self,info_hash):
+            try:
 		info_hash = info_hash.upper()
 		url = self._thunder_url + '/' + info_hash[0:2] + '/' + info_hash[-2:None] + '/' +info_hash + '.torrent'
 		print "downloading: " + url
 		filename = self.torrent_dir + '/'  + info_hash + '.torrent'
+                if os.path.isfile(filename) : 
+                    print " file %s exists" % filename
+                    return 
 		ret = urllib.urlretrieve(url,filename, _download_call_back)
 		size = os.path.getsize(filename)
 		if(size < 300):
@@ -32,8 +37,11 @@ class TorrentDownloader(object):
 			print "download " + filename + " Failed."
 		else:
 			print 'download ' + filename + " OK."
-		pass
 
+            except Exception, e:
+                print " down load except " + str(e)
+            finally:
+                print " down load finish"
 
 	def download_from_btdepot(self,info_hash):
 		pass
@@ -46,6 +54,8 @@ def download_thread(index, info_hash_list):
 	
 	print "Thread " + str(index) + " stopped"
 
+def init_socket():
+    socket.setdefaulttimeout(10)
 
 if __name__ == '__main__':
 
@@ -53,19 +63,23 @@ if __name__ == '__main__':
 		print 'Usage : download_torrent.py info_hash_list'
 		sys.exit(-1)
 
+        init_socket()
+        names = os.path.basename(sys.argv[1])
+        names = names.split(".")
+        torrent_dir.torrent_dir = TorrentDownloader.torrent_dir +  "/" + names[0]
+
 	if not os.path.exists(TorrentDownloader.torrent_dir):
 		os.mkdir(TorrentDownloader.torrent_dir)
 	info_hash_file = open(sys.argv[1])
 	info_hash_list = [l.strip() for l in info_hash_file.readlines()]
 	info_hash_file.close()
 	
-	for l in info_hash_list:
-		print "info_hash: " + l + " len " + str(len(l))
+	#for l in info_hash_list:
+		#print "info_hash: " + l + " len " + str(len(l))
 
 	max_treads = 5
 	group_size = len(info_hash_list) / max_treads
 	print "group_size " + str(group_size)
-	pass
 		
 	threads = []
 	for i in range(max_treads):
