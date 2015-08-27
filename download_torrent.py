@@ -22,26 +22,26 @@ class TorrentDownloader(object):
 		pass
 
 	def download_from_thunder(self,info_hash):
-            try:
-		info_hash = info_hash.upper()
-		url = self._thunder_url + '/' + info_hash[0:2] + '/' + info_hash[-2:None] + '/' +info_hash + '.torrent'
-		print "downloading: " + url
-		filename = self.torrent_dir + '/'  + info_hash + '.torrent'
-                if os.path.isfile(filename) : 
-                    print " file %s exists" % filename
-                    return 
-		ret = urllib.urlretrieve(url,filename, _download_call_back)
-		size = os.path.getsize(filename)
-		if(size < 300):
-			os.remove(filename)
-			print "download " + filename + " Failed."
-		else:
-			print 'download ' + filename + " OK."
+		try:
+			info_hash = info_hash.upper()
+			url = self._thunder_url + '/' + info_hash[0:2] + '/' + info_hash[-2:None] + '/' +info_hash + '.torrent'
+			print "downloading: " + url
+			filename = self.torrent_dir + '/'  + info_hash + '.torrent'
+			if os.path.isfile(filename) : 
+				print " file %s exists" % filename
+				return 
+			ret = urllib.urlretrieve(url,filename, _download_call_back)
+			size = os.path.getsize(filename)
+			if(size < 300):
+				os.remove(filename)
+				print "download " + filename + " Failed."
+			else:
+				print 'download ' + filename + " OK."
 
-            except Exception, e:
-                print " down load except " + str(e)
-            finally:
-                print " down load finish"
+		except Exception, e:
+			print " down load except " + str(e)
+		finally:
+			print " down load finish"
 
 	def download_from_btdepot(self,info_hash):
 		pass
@@ -55,7 +55,7 @@ def download_thread(index, info_hash_list):
 	print "Thread " + str(index) + " stopped"
 
 def init_socket():
-    socket.setdefaulttimeout(10)
+	socket.setdefaulttimeout(10)
 
 if __name__ == '__main__':
 
@@ -63,10 +63,10 @@ if __name__ == '__main__':
 		print 'Usage : download_torrent.py info_hash_list'
 		sys.exit(-1)
 
-        init_socket()
-        names = os.path.basename(sys.argv[1])
-        names = names.split(".")
-        TorrentDownloader.torrent_dir = TorrentDownloader.torrent_dir +  "/" + names[0]
+	init_socket()
+	names = os.path.basename(sys.argv[1])
+	names = names.split(".")
+	TorrentDownloader.torrent_dir = TorrentDownloader.torrent_dir +  "/" + names[0]
 
 	if not os.path.exists(TorrentDownloader.torrent_dir):
 		os.mkdir(TorrentDownloader.torrent_dir)
@@ -90,4 +90,3 @@ if __name__ == '__main__':
 	for t in threads:
 		t.join()	
 	
-	pass
