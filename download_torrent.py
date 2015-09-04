@@ -66,7 +66,7 @@ if __name__ == '__main__':
         init_socket()
         names = os.path.basename(sys.argv[1])
         names = names.split(".")
-        torrent_dir.torrent_dir = TorrentDownloader.torrent_dir +  "/" + names[0]
+        TorrentDownloader.torrent_dir = TorrentDownloader.torrent_dir +  "/" + names[0]
 
 	if not os.path.exists(TorrentDownloader.torrent_dir):
 		os.mkdir(TorrentDownloader.torrent_dir)

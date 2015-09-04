@@ -7,39 +7,32 @@ class Mysql_hanle(object):
        self._dbuser = user
        self._dbpasswd = passwd
        self._dbport = port
-
+       conn=MySQLdb.connect(host='127.0.0.1',user=self._dbuser, passwd =self._dbpasswd, port=3306,charset="UTF8")
     def create_database(self):
         try:
-            conn=MySQLdb.connect(host='127.0.0.1',user=self._dbuser, passwd =self._dbpasswd, port=3306,charset="UTF8")
             cur=conn.cursor()
             cur.execute('create database if not exists dht')
             conn.select_db('dht')
             cur.execute('drop table if exists hash_info')
             cur.execute('drop table if exists peerIP')
-            cur.execute('create table hash_info(hash varchar(40), info varchar(100),primary key(hash))')
+            cur.execute('create table hash_info(hash varchar(40), info varchar(300),primary key(hash)) engine=myisam charset=utf8')
             cur.execute('create table peerIP(ip varchar(40), info varchar(100),primary key(ip))')
             conn.commit()
-            cur.close()
-            conn.close()
         except MySQLdb.Error,e:
             print 'mysql error %d:%s'%(e.args[0],e.args[1])
 
     def insert_info(self, hash, content):
         try:
-            conn=MySQLdb.connect(host='127.0.0.1',user=self._dbuser, passwd =self._dbpasswd, port=3306,charset="UTF8")
             cur=conn.cursor()
             conn.select_db('dht')
             sql="insert into hash_info(hash,info) values('%s','%s')"%(hash, content)
             cur.execute(sql)
             conn.commit()
-            cur.close()
-            conn.close()
         except MySQLdb.Error,e:
             print 'mysql error %d:%s'%(e.args[0],e.args[1])
 
     def select_all_table(self, table):
         try:
-            conn=MySQLdb.connect(host='127.0.0.1',user=self._dbuser, passwd =self._dbpasswd, port=3306,charset="UTF8")
             cur=conn.cursor()
             conn.select_db('dht')
             sql="select * from "+table
@@ -52,20 +45,15 @@ class Mysql_hanle(object):
                 if r[1]!="error" and r[1]!="":
                     print r[1]
             conn.commit()
-            cur.close()
-            conn.close()
         except MySQLdb.Error,e:
             print 'mysql error %d:%s'%(e.args[0],e.args[1])
 
     def executeSQL(self, sql):
         try:
-            conn=MySQLdb.connect(host='127.0.0.1',user=self._dbuser, passwd =self._dbpasswd, port=3306,charset="UTF8")
             cur=conn.cursor()
             conn.select_db('dht')
             cur.execute(sql)
             conn.commit()
-            cur.close()
-            conn.close()
         except MySQLdb.Error,e:
             print 'mysql error %d:%s'%(e.args[0],e.args[1])
 
