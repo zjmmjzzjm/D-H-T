@@ -20,6 +20,7 @@ def _download_call_back(blocknum, blocksize, totalsize):
 class TorrentDownloader(object):
 	_thunder_url = "http://bt.box.n0808.com"
 	_torcache_url = "http://www.torcache.net"
+	_url_178 = 'http://178.73.198.210/torrent'
 	torrent_dir = "torrents"
 	def __init__(self):
 		pass
@@ -54,6 +55,33 @@ class TorrentDownloader(object):
 	def download_from_btdepot(self,info_hash):
 		pass
 
+	def download_from_178(self, info_hash):
+		try:
+			info_hash = info_hash.upper()
+			url = self._url_178 + '/' +info_hash + '.torrent'
+			print "downloading from http://178.73.198.210/: " + url
+			filename = self.torrent_dir + '/'  + info_hash + '.torrent'
+			if os.path.isfile(filename) : 
+				print " file %s exists" % filename
+				return 0
+			ret = urllib2.urlopen(url)
+			try:
+				f = open(filename, "w")
+				f.write(ret.read())
+				f.close()
+				print 'downlaod ok'
+				return 0
+			except Exception, e:
+				print "Write file failed." + filename
+				return -1;
+		except Exception, e:
+			print " down load except " + str(e)
+			return -1
+		finally:
+			print " down load finish"
+
+		return -1
+
 	def download_from_torcache(self, info_hash):
 		try:
 			info_hash = info_hash.upper()
@@ -74,6 +102,7 @@ class TorrentDownloader(object):
 				f = open(filename, "w")
 				f.write(c)
 				f.close()
+				return 0
 
 			except Exception, e:
 				print "Write file failed." + filename
@@ -91,9 +120,12 @@ def download_thread(index, info_hash_list):
 	print "Thread " + str(index) + " started "
 	for info_hash in info_hash_list:
 		ret = -1
-		ret = downloader.download_from_thunder(info_hash)
+#		ret = downloader.download_from_thunder(info_hash)
+#		if(ret != 0):
+#			ret = downloader.download_from_torcache(info_hash)
+
 		if(ret != 0):
-			ret = downloader.download_from_torcache(info_hash)
+			ret = downloader.download_from_178(info_hash)
 	
 	print "Thread " + str(index) + " stopped"
 
