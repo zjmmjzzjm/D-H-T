@@ -17,7 +17,6 @@ if __name__ == "__main__":
             try:
                 #ses = lt.session()
                 #ses.listen_on(6881, 6891)
-
                 e = lt.bdecode(open(torrent_name, 'rb').read())
                 info = lt.torrent_info(e)
 
@@ -35,6 +34,7 @@ if __name__ == "__main__":
             except Exception , e:
                 print "cannot parse torrent " +  torrent_name , e
                 pass
+
 
 #pass
 #params = { save_path: '.', \

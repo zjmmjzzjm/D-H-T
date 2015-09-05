@@ -159,8 +159,8 @@ class Collector(object):
         Add hash_info to session, begin down load torrent
         '''
 
-        return
         self._insert_info_hash(hash_info)
+        return 
         if (self._download_meta_params.has_key(hash_info) is True):
             print "info hash" + hash_info + "already downloading"
             return

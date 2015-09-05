@@ -79,6 +79,7 @@ def magnet2torrent(magnet, output_name=None):
     torinfo = handle.get_torrent_info()
     torfile = lt.create_torrent(torinfo)
 
+	
     output = pt.abspath(torinfo.name() + ".torrent")
 
     if output_name:
