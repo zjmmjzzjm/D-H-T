@@ -259,7 +259,7 @@ class Collector(object):
         for session in self._sessions:
             torrents = session.get_torrents()
             for torrent in torrents:
-                session.remove_torrent(torrent)
+                session.remove_torrent(torrent, 1)
 
 
     def saveHashInfo(self, info_hash, torrent_content):
