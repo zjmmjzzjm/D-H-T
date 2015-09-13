@@ -30,21 +30,39 @@ class btdepot_craw(object):
 		r = requests.get(search_url, headers = self._headers)
 		#print r.cookies
 		soup = BeautifulSoup(r.content)
-		item_list = soup.find_all("div", class_ = "item_container")
-		for i in range(len(item_list)):
-			if(i > 0):
-				temp = item_list[i].a["href"]
-				print "===>",i, "  " , temp 
-				info_url = self._btdepot_url + temp
-				r = requests.get(info_url, headers = self._headers1, cookies = r.cookies)
-				child_soup = BeautifulSoup(r.content)
-				magnet_url = child_soup.find_all("textarea" )[0].string
-				print 'magnet : ', magnet_url
-				files = child_soup.find_all("span", string="Size: ")[0].next_sibling.string
-				size = child_soup.find_all("span", string="Files: ")[0].next_sibling.string
-				index_date = child_soup.find_all("span", string="Index Date: ")[0].next_sibling.string
-				hash_info  = child_soup.find_all("span", string="Hash: ")[0].next_sibling.string
-				print "size : ", size , " files: " , files, " index_date " , index_date, "hash info " , hash_info
+		ret = re.search(r'totalPages: \d*',r.content)
+		totalPages = int(ret.group(0).split(':')[1].strip())
+		print 'totalPages:',totalPages
+		for page in range(1,totalPages + 1):
+			search_url = self._btdepot_url + "/search/" + keyword +"/" + str(page)
+			r = requests.get(search_url, headers = self._headers)
+			#print r.cookies
+			soup = BeautifulSoup(r.content)
+			item_list = soup.find_all("div", class_ = "item_container")
+			for i in range(len(item_list)):
+				if(i > 0):
+					temp = item_list[i].a["href"]
+					print "===>",i, "  " , temp 
+					info_url = self._btdepot_url + temp
+					r = requests.get(info_url, headers = self._headers1, cookies = r.cookies)
+					child_soup = BeautifulSoup(r.content)
+					magnet_url = child_soup.find_all("textarea" )[0].string
+					print 'magnet : ', magnet_url
+					size = child_soup.find_all("span", string="Size: ")[0].next_sibling.string
+					files = child_soup.find_all("span", string="Files: ")[0].next_sibling.string
+					index_date = child_soup.find_all("span", string="Index Date: ")[0].next_sibling.string
+					hash_info  = child_soup.find_all("span", string="Hash: ")[0].next_sibling.string
+					
+					detailfiles = child_soup.find_all("div")
+					for d in detailfiles:
+						if d.has_attr('style') and d['style'] == "margin-bottom: 50px;":
+							fnn = d.find_all('div')
+							for e in fnn:
+								filename = '-'.join(e.find_all('span')[0].strings)
+								size = e.find_all('span')[1].string
+								print  "file:", filename, "===>size:", size
+
+					print "size : ", size , " files: " , files, " index_date " , index_date, "hash info " , hash_info
 			
 
 		
