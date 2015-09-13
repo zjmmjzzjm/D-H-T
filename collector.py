@@ -51,6 +51,7 @@ class Collector(object):
 	_current_meta_count = 0
 	_meta_list = {}
 	_download_meta_params = {}
+	_infohash_dir = "infohash"
 
 	def __init__(self,
 				 session_nums=50,
@@ -69,9 +70,13 @@ class Collector(object):
 		self.download_session.add_dht_router('router.utorrent.com', 6881)
 		self.download_session.add_dht_router('router.bitcomet.com', 6881)
 		self.download_session.add_dht_router('dht.transmissionbt.com', 6881)
+		if os.path.isdir(self._infohash_dir) is False:
+			os.mkdir(self._infohash_dir)
+
 
 
 	def _backup_result(self):
+		return 
 		back_file = '%s_%s' % (time.strftime('%Y%m%d'), self._result_file)
 		if os.path.isfile(self._result_file) and not os.path.isfile(back_file):
 			os.system('cp %s %s_%s' %
@@ -87,7 +92,8 @@ class Collector(object):
 				f.write(info_hash)
 
 	def _insert_info_hash(self, info_hash):
-		back_file = '%s_%s' % (time.strftime('%Y%m%d'), self._result_file)
+
+		back_file = self._infohash_dir +'/' +  '%s_%s' % (time.strftime('%Y%m%d'), self._result_file)
 		try :
 			f = open(back_file, 'a')
 			f.write(info_hash+'\n')
