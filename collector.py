@@ -52,6 +52,7 @@ class Collector(object):
 	_meta_list = {}
 	_download_meta_params = {}
 	_infohash_dir = "infohash"
+	_metadata_dir = "metadata"
 
 	def __init__(self,
 				 session_nums=50,
@@ -72,6 +73,8 @@ class Collector(object):
 		self.download_session.add_dht_router('dht.transmissionbt.com', 6881)
 		if os.path.isdir(self._infohash_dir) is False:
 			os.mkdir(self._infohash_dir)
+		if os.path.isdir(self._metadata_dir) is False:
+			os.mkdir(self._metadata_dir)
 
 
 
@@ -216,7 +219,7 @@ class Collector(object):
 
 	def save_metadata(self, info_hash, torinfo):
 		torfile = lt.create_torrent(torinfo)
-		dirname = '%s_%s' % (time.strftime('%Y%m%d'), "meta")
+		dirname = self._metadata_dir + '/' + '%s_%s' % (time.strftime('%Y%m%d'), "meta")
 		if os.path.isdir(dirname) is False:
 			os.mkdir(dirname)
 
