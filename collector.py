@@ -9,7 +9,7 @@ import json
 import random
 import traceback as tb
 import tempfile
-
+import shutil
 import libtorrent as lt
 import MySQLdb
 
@@ -17,6 +17,7 @@ class DownloadParam(object):
 	_time_out = 40
 	def __init__(self):
 	   self.start_time = -1
+	   self.download_dir = "not created"
 
 	def is_timeout(self):
 		if(time.time() - self.start_time > self._time_out):
@@ -164,10 +165,6 @@ class Collector(object):
 			print "info hash" + hash_info + "already downloading"
 			return
 
-		download_param = DownloadParam()
-		download_param.start_time = time.time()
-
-		self._download_meta_params[hash_info] = download_param
 
 		magnet='magnet:?xt=urn:btih:'+hash_info
 		print "Add magnet ", magnet
@@ -183,6 +180,11 @@ class Collector(object):
 
 		lt.add_magnet_uri(ses, magnet, params)
 
+		download_param = DownloadParam()
+		download_param.start_time = time.time()
+		download_param.download_dir= tempdir
+
+		self._download_meta_params[hash_info] = download_param
 	
 	def check_download_torrent(self):
 		handles = self.download_session.get_torrents() 
@@ -192,18 +194,20 @@ class Collector(object):
 				if(self._download_meta_params.has_key(info_hash) ):
 					p =  self._download_meta_params[info_hash]
 					if (p.is_timeout()):
-						self.download_session.remove_torrent(handle, 1)
-						self._download_meta_params.pop(info_hash)
+						self.remove_torrent(info_hash, handle)
 						print "remove time out ",info_hash
 			else:
-				if(self._download_meta_params.has_key(info_hash) ):
-					self._download_meta_params.pop(info_hash)
 				torinfo = handle.get_torrent_info()
 				#content = self.dump_torrent_info(torinfo)
 				#self.saveHashInfo(info_hash, content)
 				self.save_metadata(info_hash, torinfo)
-				self.download_session.remove_torrent(handle, 1)
-				
+				self.remove_torrent(info_hash, handle)
+
+	def remove_torrent(self, info_hash, handle):
+		self.download_session.remove_torrent(handle, 1)
+		shutil.rmtree(self._download_meta_params[info_hash].download_dir)
+		self._download_meta_params.pop(info_hash)
+
 	def save_metadata(self, info_hash, torinfo):
 		torfile = lt.create_torrent(torinfo)
 		dirname = '%s_%s' % (time.strftime('%Y%m%d'), "meta")
