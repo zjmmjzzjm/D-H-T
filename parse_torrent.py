@@ -5,9 +5,22 @@ import os
 import sys
 import mysql
 
-if __name__ == "__main__":
-    dirname = "torrents/"
+def parse_torrent(torrent_name):
+	e = lt.bdecode(open(torrent_name, 'rb').read())
+	info = lt.torrent_info(e)
 
+	print "info_hash " + info.info_hash().to_string().encode("HEX")
+	content = info.name() + "\n"
+	print info.name()
+	num_file = info.num_files()
+	print "num_files ", num_file
+	for i in range(num_file):
+	    f = info.file_at(i)
+	    content += f.path + " " + str(f.size) + "\n"
+	print content
+
+
+def parse_and_insert(dirname = "torrents/"):
     mysql_handle = mysql.Mysql_hanle()
     for root,dirs, files in os.walk(dirname):
         if len(files) == 0:
@@ -35,6 +48,8 @@ if __name__ == "__main__":
                 print "cannot parse torrent " +  torrent_name , e
                 pass
 
+if __name__ == "__main__":
+	parse_torrent(sys.argv[1])
 
 #pass
 #params = { save_path: '.', \
