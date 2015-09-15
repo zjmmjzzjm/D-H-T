@@ -7,6 +7,7 @@ import my_csv_storer
 import time
 import os
 import traceback
+import socket
 
 
 class btdepot_craw(object):
@@ -32,13 +33,17 @@ class btdepot_craw(object):
 	def __init__(self):
 		if os.path.isdir(self._csv_dir) == False:
 			os.mkdir(self._csv_dir)
+		self.cur_key_seachcount = 0
+		self.cur_key = ""
 
 
 	def craw(self, keyword_list):
 		pass
 	def craw_single_keyword(self, keyword):
+		self.cur_key = keyword
+		self.cur_key_seachcount = 0
 		search_url = self._btdepot_url + "/search/" + keyword
-		r = requests.get(search_url, headers = self._headers)
+		r = requests.get(search_url, headers = self._headers, timeout=10)
 		#print r.cookies
 		soup = BeautifulSoup(r.content)
 		ret = re.search(r'totalPages: \d*',r.content)
@@ -53,7 +58,7 @@ class btdepot_craw(object):
 		for page in range(1,totalPages + 1):
 			try:
 				search_url = self._btdepot_url + "/search/" + keyword +"/" + str(page)
-				r = requests.get(search_url, headers = self._headers)
+				r = requests.get(search_url, headers = self._headers, timeout=10)
 				#print r.cookies
 				soup = BeautifulSoup(r.content)
 				item_list = soup.find_all("div", class_ = "item_container")
@@ -63,7 +68,7 @@ class btdepot_craw(object):
 					temp = item_list[i].a["href"]
 					#print "===>",i, "  " , temp 
 					info_url = self._btdepot_url + temp
-					r = requests.get(info_url, headers = self._headers1, cookies = r.cookies)
+					r = requests.get(info_url, headers = self._headers1, cookies = r.cookies, timeout=10)
 					child_soup = BeautifulSoup(r.content)
 					magnet_url = child_soup.find_all("textarea" )[0].string
 					print magnet_url
@@ -88,6 +93,7 @@ class btdepot_craw(object):
 					#print type(magnet_url)
 					#print '<==============='
 					storer.store(unicode(hash_info).encode('utf8'), unicode(content).encode('utf8'), unicode(magnet_url).encode('utf8'))
+					self.cur_key_seachcount += 1
 			except Exception, e:
 				print "found exception", e
 				traceback.print_exc()
@@ -98,15 +104,20 @@ if "__main__"== __name__:
 	c = btdepot_craw()
 	f = open(sys.argv[1], "rb")
 
+	socket.setdefaulttimeout(10)
 	index = 0
 	for l in f.readlines():
 		keyword = l.strip()
 		index  += 1
 		print "key word: __" + keyword + "__" + " index : ", index
-		open("record.txt", "wb").write("current: " + str(index))
+
 		try:
 			c.craw_single_keyword(keyword)
+			with open("record.txt", "a") as frecord:
+				frecord.write(str(index) + ", ok," + str(c.cur_key_seachcount) + ",  keyword : " + keyword + "\n")
 		except Exception, e:
+			with open("record.txt", "a") as frecord:
+				frecord.write(str(index) + ", fail, " + str(c.cur_key_seachcount) +",  keyword : " + keyword + "\n")
 			print "Found Exception", e
 			traceback.print_exc()
 
