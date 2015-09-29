@@ -14,7 +14,7 @@ class btdepot_craw(object):
 	_headers = {'Connection': "keep-alive",
 			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
 			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.132 Safari/537.36',
-			'Referer': 'http://www.btdepot.com/',
+			'Referer': 'http://www.breadsearch.com/',
 			'Accept-Encoding': 'gzip, deflate, sdch',
 			'Accept-Language': 'en-US,en;q=0.8,zh;q=0.6'
 			}
@@ -23,7 +23,7 @@ class btdepot_craw(object):
 			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
 			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.132 Safari/537.36',
 			'Cache-Control': 'max-age=0',
-			'Host': 'www.btdepot.com',
+			'Host': 'www.breadsearch.com',
 			'Accept-Encoding': 'gzip, deflate, sdch',
 			'Accept-Language': 'en-US,en;q=0.8,zh;q=0.6',
 
@@ -61,36 +61,27 @@ class btdepot_craw(object):
 				r = requests.get(search_url, headers = self._headers, timeout=10)
 				#print r.cookies
 				soup = BeautifulSoup(r.content)
-				item_list = soup.find_all("div", class_ = "item_container")
+				item_list = soup.find_all("div", class_ = "search-item")
 				for i in range(len(item_list)):
-					if(i == 0):
-						continue
-					temp = item_list[i].a["href"]
-					#print "===>",i, "  " , temp 
+					temp = item_list[i].find_all('a')[0]["href"]
 					info_url = self._btdepot_url + temp
 					r = requests.get(info_url, headers = self._headers1, cookies = r.cookies, timeout=10)
 					child_soup = BeautifulSoup(r.content)
-					magnet_url = child_soup.find_all("textarea" )[0].string
+					magnet_url = child_soup.find_all('ul', class_="prop-list" )[0].find_all('a')[0]['href']
 					print magnet_url
-					size = child_soup.find_all("span", string="Size: ")[0].next_sibling.string
-					files = child_soup.find_all("span", string="Files: ")[0].next_sibling.string
-					index_date = child_soup.find_all("span", string="Index Date: ")[0].next_sibling.string
-					hash_info  = child_soup.find_all("span", string="Hash: ")[0].next_sibling.string
-					title = child_soup.find_all('h1', class_ = 'torrent_title')[0].string
+					hash_info  = magnet_url[20:60]
+					title = child_soup.find_all('h1', class_ = 'detail-title')[0].string
+					print "==> title", title
 
 
 					
-					detailfiles = child_soup.find_all("div")
-					files = []
-					for d in detailfiles:
-						if d.has_attr('style') and d['style'] == "margin-bottom: 50px;":
-							fnn = d.find_all('div')
-							files = [ '-'.join(e.find_all('span')[0].strings) + " " + e.find_all('span')[1].string for e in fnn]
+					detailfiles = child_soup.find_all('ul',class_="file-list")[0].find_all('li')
+					files = [ '-'.join(e.find_all('span')[0].strings) + " " + e.find_all('span')[1].string for e in detailfiles]
 					content = title + "\n" + "\n".join(files)
 					#print '===============>'
-					#print type(hash_info)
-					#print type(content.encode('utf8'))
-					#print type(magnet_url)
+					#print (hash_info)
+					#print (content.encode('utf8'))
+					#print (magnet_url)
 					#print '<==============='
 					storer.store(unicode(hash_info).encode('utf8'), unicode(content).encode('utf8'), unicode(magnet_url).encode('utf8'))
 					self.cur_key_seachcount += 1
