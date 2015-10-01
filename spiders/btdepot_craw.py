@@ -35,6 +35,8 @@ class btdepot_craw(object):
 			os.mkdir(self._csv_dir)
 		self.cur_key_seachcount = 0
 		self.cur_key = ""
+		self.pid = str(os.getpid())
+		self.record_file = "btdepot_record_" + self.pid + ".txt"
 
 
 	def craw(self, keyword_list):
@@ -51,7 +53,7 @@ class btdepot_craw(object):
 		if ret is None:
 			print r.content
 		totalPages = int(ret.group(0).split(':')[1].strip())
-		csv_name = self._csv_dir + "/btdepot_" + time.strftime("%Y%m%d") + ".csv"
+		csv_name = self._csv_dir + "/btdepot_" + time.strftime("%Y%m%d") + "_" + self.pid + ".csv"
 		storer = my_csv_storer.my_csv_storer(csv_name)
 		print 'totalPages:',totalPages
 
@@ -113,10 +115,10 @@ if "__main__"== __name__:
 
 		try:
 			c.craw_single_keyword(keyword)
-			with open("record.txt", "a") as frecord:
+			with open(c.record_file, "a") as frecord:
 				frecord.write(str(index) + ", ok," + str(c.cur_key_seachcount) + ",  keyword : " + keyword + "\n")
 		except Exception, e:
-			with open("record.txt", "a") as frecord:
+			with open(c.record_file, "a") as frecord:
 				frecord.write(str(index) + ", fail, " + str(c.cur_key_seachcount) +",  keyword : " + keyword + "\n")
 			print "Found Exception", e
 			traceback.print_exc()
