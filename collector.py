@@ -53,6 +53,7 @@ class Collector(object):
 	_download_meta_params = {}
 	_infohash_dir = "infohash"
 	_metadata_dir = "metadata"
+	_is_download_meta = False
 
 	def __init__(self,
 				 session_nums=50,
@@ -170,6 +171,8 @@ class Collector(object):
 		'''
 
 		self._insert_info_hash(hash_info)
+		if self._is_download_meta == False:
+			return 
 		if (self._download_meta_params.has_key(hash_info) is True):
 			print "info hash" + hash_info + "already downloading"
 			return
