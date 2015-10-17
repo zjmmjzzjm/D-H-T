@@ -30,13 +30,13 @@ class btdepot_craw(object):
 			}
 	_btdepot_url = "http://www.breadsearch.com"
 	_csv_dir = "csv"
-	def __init__(self):
+	def __init__(self, suffix = ""):
 		if os.path.isdir(self._csv_dir) == False:
 			os.mkdir(self._csv_dir)
 		self.cur_key_seachcount = 0
 		self.cur_key = ""
 		self.pid = str(os.getpid())
-		self.record_file =  "breadsearch_record_" + self.pid + ".txt"
+		self.record_file =  "breadsearch_record_" + suffix + "_" +self.pid + ".txt"
 
 
 	def craw(self, keyword_list):
@@ -94,7 +94,7 @@ class btdepot_craw(object):
 		storer.cleanup()
 
 if "__main__"== __name__:
-	c = btdepot_craw()
+	c = btdepot_craw(os.path.basename(sys.argv[1]).split('.')[0])
 	f = open(sys.argv[1], "rb")
 
 	socket.setdefaulttimeout(10)
