@@ -15,17 +15,20 @@ class btdepot_craw(object):
 			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
 			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.132 Safari/537.36',
 			'Referer': 'http://www.btdepot.com/',
-			'Accept-Encoding': 'gzip, deflate, sdch',
-			'Accept-Language': 'en-US,en;q=0.8,zh;q=0.6'
-			}
-
-	_headers1 = {'Connection': "keep-alive",
-			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.132 Safari/537.36',
-			'Cache-Control': 'max-age=0',
 			'Host': 'www.btdepot.com',
 			'Accept-Encoding': 'gzip, deflate, sdch',
 			'Accept-Language': 'en-US,en;q=0.8,zh;q=0.6',
+			'Upgrade-Insecure-Requests':'1',
+			}
+
+	_headers1 = {
+			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+			'Accept-Encoding': 'gzip, deflate, sdch',
+			'Accept-Language':'zh-CN,zh;q=0.8' ,
+			'Connection':"keep-alive",
+			'Host': 'www.btdepot.com',
+			'Upgrade-Insecure-Requests':'1',
+			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.132 Safari/537.36',
 
 			}
 	_btdepot_url = "http://www.btdepot.com"
@@ -45,17 +48,19 @@ class btdepot_craw(object):
 		self.cur_key = keyword
 		self.cur_key_seachcount = 0
 		search_url = self._btdepot_url + "/search/" + keyword
-		r = requests.get(search_url, headers = self._headers, timeout=10)
-		#print r.cookies
-		soup = BeautifulSoup(r.content)
-		ret = re.search(r'totalPages: \d*',r.content)
+		r0 = requests.get(search_url, headers = self._headers, timeout=10)
+		#print r0.cookies
+		soup = BeautifulSoup(r0.content)
+		ret = re.search(r'totalPages: \d*',r0.content)
 		print "match result ", ret
 		if ret is None:
-			print r.content
+			print r0.content
+
 		totalPages = int(ret.group(0).split(':')[1].strip())
 		csv_name = self._csv_dir + "/btdepot_" + time.strftime("%Y%m%d") + "_" + self.pid + ".csv"
 		storer = my_csv_storer.my_csv_storer(csv_name)
 		print 'totalPages:',totalPages
+		time.sleep(0.5)
 
 		for page in range(1,totalPages + 1):
 			try:
@@ -64,13 +69,15 @@ class btdepot_craw(object):
 				#print r.cookies
 				soup = BeautifulSoup(r.content)
 				item_list = soup.find_all("div", class_ = "item_container")
+
+				time.sleep(0.5)
 				for i in range(len(item_list)):
 					if(i == 0):
 						continue
 					temp = item_list[i].a["href"]
 					#print "===>",i, "  " , temp 
 					info_url = self._btdepot_url + temp
-					r = requests.get(info_url, headers = self._headers1, cookies = r.cookies, timeout=10)
+					r = requests.get(info_url, headers = self._headers1, cookies = r0.cookies, timeout=10)
 					child_soup = BeautifulSoup(r.content)
 					magnet_url = child_soup.find_all("textarea" )[0].string
 					print magnet_url
