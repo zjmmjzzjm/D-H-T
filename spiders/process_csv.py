@@ -43,5 +43,5 @@ if __name__ == "__main__":
 
 	outf.close()
 
-			print "total num ", totalnum, " dupnum ", dupnum, " dup rate ", float(dupnum)/totalnum, " effective num ", totalnum - dupnum
+	print "total num ", totalnum, " dupnum ", dupnum, " dup rate ", float(dupnum)/totalnum, " effective num ", totalnum - dupnum
 
