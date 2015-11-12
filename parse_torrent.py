@@ -5,51 +5,66 @@ import os
 import sys
 import mysql
 
-def parse_torrent(torrent_name):
+import csv
+
+def parse_torrent(torrent_name, is_debug = False):
+        stat = os.stat(torrent_name)
+        index_time = int(stat.st_ctime)
 	e = lt.bdecode(open(torrent_name, 'rb').read())
 	info = lt.torrent_info(e)
-
-	print "info_hash " + info.info_hash().to_string().encode("HEX")
+        total_size = 0
 	content = info.name() + "\n"
-	print info.name()
 	num_file = info.num_files()
-	print "num_files ", num_file
+
 	for i in range(num_file):
 	    f = info.file_at(i)
 	    content += f.path + " " + str(f.size) + "\n"
-	print content
+            total_size += f.size
+        infohash = info.info_hash().to_string().encode("HEX")
+
+        if is_debug:
+            print "Name: " + info.name()
+            print "info_hash: " ,  infohash
+            print "num_files: ", num_file
+            print "contents: " + content
+            print " Total size: " , total_size
+        return ( infohash, content, total_size, index_time )
 
 
-def parse_and_insert(dirname = "torrents/"):
-    mysql_handle = mysql.Mysql_hanle()
+def parse_and_insert(dirname = "torrents"):
+    csv_name ='_'.join( dirname.split('/')) + "magnet.csv"
+    fh = open(csv_name, "w")
+    csv_writer = csv.writer(fh)
+    total = 0
     for root,dirs, files in os.walk(dirname):
         if len(files) == 0:
             continue
         for f in files:
             torrent_name = root + '/' + f;
             try:
-                #ses = lt.session()
-                #ses.listen_on(6881, 6891)
-                e = lt.bdecode(open(torrent_name, 'rb').read())
-                info = lt.torrent_info(e)
-
-                print "info_hash " + info.info_hash().to_string().encode("HEX")
-                content = info.name() + "\n"
-                print info.name()
-                num_file = info.num_files()
-                print "num_files ", num_file
-                for i in range(num_file):
-                    f = info.file_at(i)
-                    content += f.path + " " + str(f.size) + "\n"
-                print content
-                mysql_handle.insert_info(info.info_hash().to_string().encode("HEX"),content)
-                    
+                tinfo = parse_torrent(torrent_name) 
+                csv_writer.writerow(tinfo)
+                total += 1
+                if total %  400 == 0:
+                    print total
             except Exception , e:
                 print "cannot parse torrent " +  torrent_name , e
                 pass
 
+    fh.close()
+
+    print total
+
 if __name__ == "__main__":
-	parse_torrent(sys.argv[1])
+	#parse_torrent(sys.argv[1], True)
+
+        begin_time = time.time()
+        print "begin_time is ", begin_time
+        parse_and_insert(sys.argv[1])
+        end_time = time.time()
+        print "begin_time is ", begin_time
+        print "end_time is ", end_time
+        print "total consume is ", end_time-begin_time
 
 #pass
 #params = { save_path: '.', \
