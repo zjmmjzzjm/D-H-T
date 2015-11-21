@@ -30,7 +30,7 @@ if __name__ == "__main__":
 							dupnum += 1
 							continue
 						container.add(hashinfo)
-						writer.writerow([hashinfo, content, mag])
+						writer.writerow(infos)
 
 						#print mag 
 					except Exception,e:
