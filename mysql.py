@@ -17,7 +17,7 @@ class Mysql_hanle(object):
             self.conn.select_db('dht')
             self.cur.execute('drop table if exists hash_info')
             self.cur.execute('drop table if exists peerIP')
-            self.cur.execute('create table hash_info(hash varchar(40), info varchar(1024),primary key(hash)) engine=myisam charset=utf8')
+            self.cur.execute('create table hash_info(hash varchar(40), info varchar(1004857600),primary key(hash)) engine=myisam charset=utf8')
             self.cur.execute('create table peerIP(ip varchar(40), info varchar(100),primary key(ip))')
             self.conn.commit()
         except MySQLdb.Error,e:
