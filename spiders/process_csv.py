@@ -11,6 +11,7 @@ if __name__ == "__main__":
 	writer = csv.writer(outf)
 	dupnum = 0
 	totalnum = 0
+	csv.field_size_limit(1024*1024*100)
 	for root, sub, fs in os.walk(csvdir):
 		for f in fs:
 			if(not f.endswith(".csv")):
