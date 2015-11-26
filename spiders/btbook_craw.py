@@ -15,7 +15,6 @@ class btdepot_craw(object):
 	_headers = {'Connection': "keep-alive",
 			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
 			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.132 Safari/537.36',
-			"Referer":'http://www.btbook.com/search/blade/?c=&s=create_time&p=1',
 			'Host': 'www.btbook.com',
 			'Cache-Control':"max-age=0",
 			'Accept-Encoding': 'gzip, deflate, sdch',
@@ -33,6 +32,7 @@ class btdepot_craw(object):
 			'Upgrade-Insecure-Requests':'1',
 			}
 	_btdepot_url = "http://www.btbook.com"
+	_referer = ""
 	_csv_dir = "csv"
 	_base_result = ""
 	def __init__(self, suffix = ""):
@@ -42,10 +42,13 @@ class btdepot_craw(object):
 		self.cur_key = ""
 		self.pid = str(os.getpid())
 		self.record_file = "btbook_record_" + suffix + "_"  + self.pid + ".txt"
-		self._base_result = requests.get("http://www.btbook.com", headers = self._headers)
+		self._base_result = requests.get("http://www.btbook.com", headers=self._headers)
 		print self._base_result.cookies
 		time.sleep(5)
-		self._base_result = requests.get("http://www.btbook.com/search/"+str(random.randint(1,10000))+"/?c=&s=create_time&p=1", headers = self._headers1, cookies=self._base_result.cookies)
+		url = "http://www.btbook.com/search/"+str(random.randint(1,10000)) +"/"
+		self._referer = url
+		self._base_result = requests.get(url, headers = self._headers1, cookies=self._base_result.cookies)
+		self._headers['Referer'] = url
 		print self._base_result.content
 
 
