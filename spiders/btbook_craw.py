@@ -56,7 +56,7 @@ class btdepot_craw(object):
 		pass
 	def craw_single_keyword(self, keyword):
 		self.cur_key = keyword
-		time.sleep(4)
+		#	time.sleep(4)
 		self.cur_key_seachcount = 0
 		search_url = self._btdepot_url + "/h/"+ str(keyword)
 		print search_url
@@ -68,7 +68,8 @@ class btdepot_craw(object):
 		regexp = re.compile("magnet:.*") 
 		soup = BeautifulSoup(r0.content)
 		mag = soup.find_all("a",href=regexp)
-		print mag
+		with open("btbook_maglsit", "a") as f0:
+			f0.write(mag[0].string +"\n")
 
 		return 
 		ret = re.search(r'totalPages: \d*',r0.content)
