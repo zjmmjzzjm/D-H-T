@@ -24,7 +24,7 @@ if __name__ == "__main__":
 				for infos in reader:
 					try:
 						totalnum += 1
-						hashinfo = infos[0]
+						hashinfo = infos[0].lower()
 						content = infos[1]
 						mag = infos[2]
 						if(hashinfo in container):
