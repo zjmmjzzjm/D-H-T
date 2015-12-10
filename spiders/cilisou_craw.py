@@ -104,8 +104,7 @@ def craw_all():
 			row = (unicode(infohash).encode('utf8'),unicode(contents).encode('utf8'), unicode(totalsize).encode('utf8'),  index_time - random.randint(0, 60*24*3600) )
 			writer.writerow(row)
 
-			print mag
-			print count 
+			print i, ": " ,mag
 		except Exception,e:
 			print "found exception, ", e
 
