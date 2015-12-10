@@ -13,12 +13,23 @@ class Mysql_hanle(object):
     def create_database(self):
         try:
             self.cur=self.conn.cursor()
-            self.cur.execute('create database if not exists dht')
+            self.cur.execute('create database if not exists dht ')
             self.conn.select_db('dht')
             self.cur.execute('drop table if exists hash_info')
-            self.cur.execute('drop table if exists peerIP')
-            self.cur.execute('create table hash_info(hash varchar(40), info varchar(1004857600),primary key(hash)) engine=myisam charset=utf8')
-            self.cur.execute('create table peerIP(ip varchar(40), info varchar(100),primary key(ip))')
+            self.cur.execute('drop table if exists keywords')
+            self.cur.execute('''CREATE TABLE `hash_info` (
+                      `id`  int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+                      `hash` char(40) NOT NULL DEFAULT '' UNIQUE,
+                      `info` mediumtext DEFAULT NULL,
+                      `size`  bigint UNSIGNED NOT NULL,
+                      `time` int UNSIGNED NOT NULL,
+                    PRIMARY KEY (`id`) 
+                    ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ''')
+            self.cur.execute('''CREATE TABLE `keywords` (
+                    `id` int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `ip` char(20),
+                    `keyword` varchar(100)
+                    )ENGINE=MyISAM  DEFAULT CHARSET=utf8 ''')
             self.conn.commit()
         except MySQLdb.Error,e:
             print 'mysql error %d:%s'%(e.args[0],e.args[1])
@@ -26,11 +37,11 @@ class Mysql_hanle(object):
             self.cur.close()
 
 
-    def insert_info(self, hash, content):
+    def insert_info(self, hash, content, size, t ):
         try:
             self.cur=self.conn.cursor()
             self.conn.select_db('dht')
-            sql="insert into hash_info(hash,info) values('%s','%s')"%(hash, content)
+            sql="insert into hash_info(hash,info, size, time) values('%s','%s', '%s' , '%s')"% ( hash, MySQLdb.escape_string(content),size, t)
             self.cur.execute(sql)
             self.conn.commit()
         except MySQLdb.Error,e:
