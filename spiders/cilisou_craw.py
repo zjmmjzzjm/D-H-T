@@ -5,6 +5,8 @@ import requests
 from bs4 import BeautifulSoup
 import base64
 import time
+import csv
+import random
 
 class cilisou_craw(object):
 	cilisou_url =  "http://www.cilisou.cn/s.php"
@@ -73,7 +75,49 @@ class cilisou_craw(object):
 		self.soup = BeautifulSoup(r.content)
 		return self.soup
 
+def craw_all():
+	baseurl = "http://www.cilisou.cn/info.php"
+	i = 2
+	csvfile = open('clisouall.csv', 'w')
+	writer = csv.writer(csvfile)
+	while True:
+		url = baseurl+ '?sphinx_id=' + str(i)+'&info_hash='+str(i)
+		i += 1
+		try:
+			r = requests.get(url)
+			soup = BeautifulSoup(r.content)
+			s1 = soup.find_all("table", class_ = "torrent_info_tbl")[0]
+			mag=s1.contents[3].contents[3].a['href']
+			title=s1.contents[5].contents[3].string
+			totalsize=s1.contents[9].contents[3].string
+			count=s1.contents[15].contents[3].string
+			count = int(count)
+			fileinfos = []
+			for fn in range(count):
+				fi = s1.contents[20 + 2*fn + 1].contents[3].string + " " + s1.contents[20 + 2*fn + 1].contents[1].string.replace(" ", "")
+				fileinfos.append(fi)
+
+			contents = title + '\n' + '\n'.join(fileinfos)
+			
+			infohash = mag[20:60]
+			index_time = int(time.time())
+			row = (unicode(infohash).encode('utf8'),unicode(contents).encode('utf8'), unicode(totalsize).encode('utf8'),  index_time - random.randint(0, 60*24*3600) )
+			writer.writerow(row)
+
+			print mag
+			print count 
+		except Exception,e:
+			print "found exception, ", e
+
+	csvfile.close()
+
+
+
+
+
+
 
 if __name__ == "__main__":
-	crawler = cilisou_craw()
-	crawler.craw_single_keyword("咒怨")
+#	crawler = cilisou_craw()
+#	crawler.craw_single_keyword("咒怨")
+	craw_all()
