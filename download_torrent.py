@@ -120,12 +120,12 @@ def download_thread(index, info_hash_list):
 	print "Thread " + str(index) + " started "
 	for info_hash in info_hash_list:
 		ret = -1
-#		ret = downloader.download_from_thunder(info_hash)
-#		if(ret != 0):
-#			ret = downloader.download_from_torcache(info_hash)
+		ret = downloader.download_from_thunder(info_hash)
+		#if(ret != 0):
+		#	ret = downloader.download_from_torcache(info_hash)
 
-		if(ret != 0):
-			ret = downloader.download_from_178(info_hash)
+		#if(ret != 0):
+		#	ret = downloader.download_from_178(info_hash)
 	
 	print "Thread " + str(index) + " stopped"
 

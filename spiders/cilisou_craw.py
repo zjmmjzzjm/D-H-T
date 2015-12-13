@@ -8,6 +8,7 @@ import time
 import csv
 import random
 
+import socket
 class cilisou_craw(object):
 	cilisou_url =  "http://www.cilisou.cn/s.php"
 	def __init__(self):
@@ -77,14 +78,14 @@ class cilisou_craw(object):
 
 def craw_all():
 	baseurl = "http://www.cilisou.cn/info.php"
-	i = 2
+	i = 69123 
 	csvfile = open('clisouall.csv', 'w')
 	writer = csv.writer(csvfile)
 	while True:
 		url = baseurl+ '?sphinx_id=' + str(i)+'&info_hash='+str(i)
 		i += 1
 		try:
-			r = requests.get(url)
+			r = requests.get(url, timeout =20)
 			soup = BeautifulSoup(r.content)
 			s1 = soup.find_all("table", class_ = "torrent_info_tbl")[0]
 			mag=s1.contents[3].contents[3].a['href']
@@ -103,6 +104,7 @@ def craw_all():
 			index_time = int(time.time())
 			row = (unicode(infohash).encode('utf8'),unicode(contents).encode('utf8'), unicode(totalsize).encode('utf8'),  index_time - random.randint(0, 60*24*3600) )
 			writer.writerow(row)
+#                        time.sleep(1)
 
 			print i, ": " ,mag
 		except Exception,e:
@@ -117,6 +119,7 @@ def craw_all():
 
 
 if __name__ == "__main__":
+	socket.setdefaulttimeout(10)
 #	crawler = cilisou_craw()
 #	crawler.craw_single_keyword("咒怨")
 	craw_all()

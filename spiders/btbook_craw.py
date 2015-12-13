@@ -62,29 +62,25 @@ class btdepot_craw(object):
 		#	time.sleep(4)
 		self.cur_key_seachcount = 0
 		search_url = self._btdepot_url + "/h/"+ str(keyword)
-                try : 
-                    r0 = requests.get(search_url, headers = self._headers, timeout=10, cookies=self._base_result.cookies)
-                    #print r0.cookies
-                    soup = BeautifulSoup(r0.content)
-                    bodys=soup.find_all('div', class_='panel-body')
-                    detail_header_bg=soup.find_all('tr', class_ = 'detail-header-bg')
-                    mag = bodys[0].a.string
-                    infohash=mag[20:60]
-                    filecount=detail_header_bg[1].contents[7].string.strip()
-                    contents = [ bodys[1].ol.contents[2*i + 1]  for i in range(int(filecount)) ]
-                    contents1 = [ c.contents[0] + " " + c.span.string.replace(u"\xa0", u"")  for c in contents ]
-                    contents2 = '\n'.join(contents1)
-                    title = soup.find_all('h4')[0].string
-                    contents3 = title + "\n" + contents2
-                    totalsize=detail_header_bg[1].contents[5].string.strip().replace(u'\xa0', u"")
-                    index_time = int(time.time())
-                    row = (unicode(infohash).encode('utf8'),unicode(contents3).encode('utf8'), unicode(totalsize).encode('utf8'),  index_time - random.randint(0, 60*24*3600) )
-                    self._csv_writer.writerow(row)
-                    self._csv_file.flush()
-                    print infohash, title 
-                except Exception,e:
-                    print "found exception : " , e
-                    traceback.print_exc()
+                r0 = requests.get(search_url, headers = self._headers, timeout=10, cookies=self._base_result.cookies)
+                #print r0.cookies
+                soup = BeautifulSoup(r0.content)
+                bodys=soup.find_all('div', class_='panel-body')
+                detail_header_bg=soup.find_all('tr', class_ = 'detail-header-bg')
+                mag = bodys[0].a.string
+                infohash=mag[20:60]
+                filecount=detail_header_bg[1].contents[7].string.strip()
+                contents = [ bodys[1].ol.contents[2*i + 1]  for i in range(int(filecount)) ]
+                contents1 = [ c.contents[0] + " " + c.span.string.replace(u"\xa0", u"")  for c in contents ]
+                contents2 = '\n'.join(contents1)
+                title = soup.find_all('h4')[0].string
+                contents3 = title + "\n" + contents2
+                totalsize=detail_header_bg[1].contents[5].string.strip().replace(u'\xa0', u"")
+                index_time = int(time.time())
+                row = (unicode(infohash).encode('utf8'),unicode(contents3).encode('utf8'), unicode(totalsize).encode('utf8'),  index_time - random.randint(0, 60*24*3600) )
+                self._csv_writer.writerow(row)
+                self._csv_file.flush()
+                print unicode(infohash).encode("utf8"), unicode(title ).encode('utf8')
 
 if "__main__"== __name__:
 	c = btdepot_craw(os.path.basename(sys.argv[1]).split('.')[0])
