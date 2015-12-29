@@ -86,7 +86,7 @@ if "__main__"== __name__:
 	c = btdepot_craw(os.path.basename(sys.argv[1]).split('.')[0])
 
 	socket.setdefaulttimeout(10)
-	index = 0
+	index = 1795500 
 	while True:
 		index  += 1
 		keyword = str(index)

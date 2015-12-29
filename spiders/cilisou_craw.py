@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import traceback
 
 import re
 import requests
@@ -78,7 +79,7 @@ class cilisou_craw(object):
 
 def craw_all():
 	baseurl = "http://www.cilisou.cn/info.php"
-	i = 69123 
+	i = 896042 
 	csvfile = open('clisouall.csv', 'w')
 	writer = csv.writer(csvfile)
 	while True:
@@ -104,11 +105,12 @@ def craw_all():
 			index_time = int(time.time())
 			row = (unicode(infohash).encode('utf8'),unicode(contents).encode('utf8'), unicode(totalsize).encode('utf8'),  index_time - random.randint(0, 60*24*3600) )
 			writer.writerow(row)
-#                        time.sleep(1)
+#                        time.sleep(0.2)
 
 			print i, ": " ,mag
 		except Exception,e:
 			print "found exception, ", e
+			traceback.print_exc()
 
 	csvfile.close()
 
