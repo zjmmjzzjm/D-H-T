@@ -77,15 +77,24 @@ class cilisou_craw(object):
 		return self.soup
 
 def craw_all():
+	_headers = {'Connection': "keep-alive",
+			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.132 Safari/537.36',
+			'Host': 'www.cilisou.cn',
+			'Accept-Encoding': 'gzip, deflate, sdch',
+			'Accept-Language': 'en-US,en;q=0.8,zh;q=0.6',
+			'Upgrade-Insecure-Requests':'1',
+			}
 	baseurl = "http://www.cilisou.cn/info.php"
-	i = 69123 
+	i = 810000 
 	csvfile = open('clisouall.csv', 'w')
 	writer = csv.writer(csvfile)
 	while True:
 		url = baseurl+ '?sphinx_id=' + str(i)+'&info_hash='+str(i)
+		print url
 		i += 1
 		try:
-			r = requests.get(url, timeout =20)
+			r = requests.get(url,headers=_headers, timeout =20)
 			soup = BeautifulSoup(r.content)
 			s1 = soup.find_all("table", class_ = "torrent_info_tbl")[0]
 			mag=s1.contents[3].contents[3].a['href']
@@ -104,7 +113,7 @@ def craw_all():
 			index_time = int(time.time())
 			row = (unicode(infohash).encode('utf8'),unicode(contents).encode('utf8'), unicode(totalsize).encode('utf8'),  index_time - random.randint(0, 60*24*3600) )
 			writer.writerow(row)
-#                        time.sleep(1)
+			time.sleep(1)
 
 			print i, ": " ,mag
 		except Exception,e:
