@@ -2,6 +2,8 @@
 import MySQLdb
 import os
 import time
+import getopt
+import sys
 
 class Mysql_hanle(object):
 	def __init__(self, user= 'root', passwd = '123456', port = 3306):
@@ -31,9 +33,9 @@ class Mysql_hanle(object):
 			self.cur=self.conn.cursor()
 			self.cur.execute('create database if not exists dht ')
 			self.conn.select_db('dht')
-			self.cur.execute('drop table if exists hash_info')
-			self.cur.execute('drop table if exists keywords')
-			self.cur.execute('''CREATE TABLE `hash_info` (
+			#self.cur.execute('drop table if exists hash_info')
+			#self.cur.execute('drop table if exists keywords')
+			self.cur.execute('''CREATE TABLE if NOT EXISTS `hash_info` (
 					  `id`  int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 					  `hash` char(40) NOT NULL DEFAULT '' UNIQUE,
 					  `info` mediumtext DEFAULT NULL,
@@ -41,17 +43,22 @@ class Mysql_hanle(object):
 					  `time` int UNSIGNED NOT NULL,
 					PRIMARY KEY (`id`) 
 					) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ''')
-			self.cur.execute('''CREATE TABLE `keywords` (
+			self.cur.execute('''CREATE TABLE if NOT EXISTS `keywords` (
 					`id` int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					`ip` char(20),
 					`keyword` varchar(100)
 					)ENGINE=MyISAM  DEFAULT CHARSET=utf8 ''')
-			self.cur.execute('''CREATE TABLE `hash_set` (
+			self.cur.execute('''CREATE TABLE if NOT EXISTS `hash_set` (
 					`id` int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					`hash` char(40) DEFAULT '' UNIQUE,
 					`hit` int UNSIGNED NOT NULL, 
 					`last_hit_time` int UNSIGNED NOT NULL 
 					)ENGINE=MyISAM  DEFAULT CHARSET=utf8 ''')
+			self.cur.execute('''CREATE TABLE if NOT EXISTS `sphinx_counter` (
+					`max_sphinx_id` int UNSIGNED NOT NULL,
+					`time` int UNSIGNED NOT NULL
+					)ENGINE=MyISAM  DEFAULT CHARSET=utf8 ''')
+
 			self.conn.commit()
 		except MySQLdb.Error,e:
 			print 'mysql error %d:%s'%(e.args[0],e.args[1])
@@ -144,14 +151,38 @@ class Mysql_hanle(object):
 		except Exception,e:
 			print "close error", str(e)
 
+	def update_sphinx_counter(self):
+		try:
+			self.cur=self.conn.cursor()
+			self.conn.select_db('dht')
+			sql = "select max(id) from hash_info";
+			self.cur.execute(sql)
+			result = self.cur.fetchone()
+			
+
+			sql="insert into sphinx_counter(max_sphinx_id, time) values('%s', '%s' )"% (result[0], int(time.time()))
+			self.cur.execute(sql)
+			self.conn.commit()
+		except MySQLdb.Error,e:
+			print 'mysql error %d:%s'%(e.args[0],e.args[1])
+			self.reconnect()
+		finally:
+			self.cur.close()
+
 
 if(__name__ == '__main__'):
 	handler = Mysql_hanle()
-	#handler.create_database()	   
-	#handler.close()
-	handler.insert_info_hash_set("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-	ret = handler.query_info_hash_set("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-	if ret == False:
-		print "not find result"
-	else:
-		print "find result"
+	opt,args = getopt.getopt(sys.argv[1:],'uc')
+	for o,v in opt:
+		if o in ['-u']:
+			handler.update_sphinx_counter()
+		elif o in ['-c']:
+			handler.create_database()	   
+	handler.close()
+
+	#handler.insert_info_hash_set("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+	#ret = handler.query_info_hash_set("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+	#if ret == False:
+	#	print "not find result"
+	#else:
+	#	print "find result"
