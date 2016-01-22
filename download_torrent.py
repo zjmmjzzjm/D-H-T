@@ -12,6 +12,7 @@ import threading
 import socket 
 import urllib2
 import gzip
+import mysql
 
 
 def _download_call_back(blocknum, blocksize, totalsize):
@@ -23,6 +24,7 @@ class TorrentDownloader(object):
 	_url_178 = 'http://178.73.198.210/torrent'
 	torrent_dir = "torrents"
 	def __init__(self):
+		self.mysql_handler = mysql.Mysql_hanle()
 		pass
 
 	def download_from_thunder(self,info_hash):
@@ -31,9 +33,12 @@ class TorrentDownloader(object):
 			url = self._thunder_url + '/' + info_hash[0:2] + '/' + info_hash[-2:None] + '/' +info_hash + '.torrent'
 			print "downloading from thunder: " + url
 			filename = self.torrent_dir + '/'  + info_hash + '.torrent'
-			if os.path.isfile(filename) : 
-				print " file %s exists" % filename
-				return 0
+			if self.mysql_handler.query_info_hash_set(info_hash) == True:
+				return 0	
+
+			#if os.path.isfile(filename) : 
+			#	print " file %s exists" % filename
+			#	return 0
 			ret = urllib.urlretrieve(url,filename, _download_call_back)
 			size = os.path.getsize(filename)
 			if(size < 300):
@@ -42,6 +47,7 @@ class TorrentDownloader(object):
 				return -1
 			else:
 				print 'download ' + filename + " OK."
+				self.mysql_handler.insert_info_hash_set(info_hash)
 				return 0
 
 		except Exception, e:
