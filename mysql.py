@@ -30,6 +30,12 @@ class Mysql_hanle(object):
                     `ip` char(20),
                     `keyword` varchar(100)
                     )ENGINE=MyISAM  DEFAULT CHARSET=utf8 ''')
+            self.cur.execute('''CREATE TABLE `hash_set` (
+                    `id` int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `hash` char(40) DEFAULT '' UNIQUE,
+                    `hit` int UNSIGNED NOT NULL, 
+                    `last_hit_time` int UNSIGNED NOT NULL 
+                    )ENGINE=MyISAM  DEFAULT CHARSET=utf8 ''')
             self.conn.commit()
         except MySQLdb.Error,e:
             print 'mysql error %d:%s'%(e.args[0],e.args[1])
