@@ -59,6 +59,13 @@ class Mysql_hanle(object):
 					`time` int UNSIGNED NOT NULL
 					)ENGINE=MyISAM  DEFAULT CHARSET=utf8 ''')
 
+			self.cur.execute('''CREATE TABLE if NOT EXISTS `hotwords` (
+					`id` int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `words` mediumtext DEFAULT NULL,
+                    `type` int UNSIGNED DEFAULT 0,
+					`time` int UNSIGNED NOT NULL,
+                    UNIQUE(time)
+					)ENGINE=MyISAM  DEFAULT CHARSET=utf8 ''')
 			self.conn.commit()
 		except MySQLdb.Error,e:
 			print 'mysql error %d:%s'%(e.args[0],e.args[1])
@@ -168,16 +175,32 @@ class Mysql_hanle(object):
 			self.reconnect()
 		finally:
 			self.cur.close()
+	def update_hot_words(self, wordtype, wordlist):
+		try:
+			self.cur=self.conn.cursor()
+			self.conn.select_db('dht')
+			words = '|'.join(wordlist)
+			sql="insert into hotwords(words,type, time) values('%s', '%s', '%s' )"% (words, wordtype, int(time.time()))
+			self.cur.execute(sql)
+			self.conn.commit()
+		except MySQLdb.Error,e:
+			print 'mysql error %d:%s'%(e.args[0],e.args[1])
+			self.reconnect()
+		finally:
+			self.cur.close()
+
 
 
 if(__name__ == '__main__'):
 	handler = Mysql_hanle()
-	opt,args = getopt.getopt(sys.argv[1:],'uc')
+	opt,args = getopt.getopt(sys.argv[1:],'uck')
 	for o,v in opt:
 		if o in ['-u']:
 			handler.update_sphinx_counter()
 		elif o in ['-c']:
-			handler.create_database()	   
+			handler.create_database()
+		elif o in ['-k']:
+			handler.update_hot_words(1, ['我们', '你们 啊短发', '他们'])
 	handler.close()
 
 	#handler.insert_info_hash_set("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
