@@ -24,13 +24,13 @@ def parse_torrent(torrent_name, is_debug = False):
 		total_size += f.size
 		infohash = info.info_hash().to_string().encode("HEX")
 
-		if is_debug:
-			print "Name: " + info.name()
-			print "info_hash: " ,  infohash
-			print "num_files: ", num_file
-			print "contents: " + content
-			print " Total size: " , total_size
-		return ( infohash, content, total_size, index_time )
+	if is_debug:
+		print "Name: " + info.name()
+		print "info_hash: " ,  infohash
+		print "num_files: ", num_file
+		print "contents: " + content
+		print " Total size: " , total_size
+	return ( infohash, content, total_size, index_time )
 
 
 def parse_and_insert(dirname = "torrents"):
