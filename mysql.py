@@ -1,4 +1,4 @@
-#-*- coding:utf-8 -*-
+#coding:utf-8 -*- 
 import MySQLdb
 import os
 import time
@@ -6,7 +6,7 @@ import getopt
 import sys
 
 class Mysql_hanle(object):
-	def __init__(self, user= 'root', passwd = '123456', port = 3306):
+	def __init__(self, user= 'root', passwd = '123', port = 3306):
 	   self._dbuser = user
 	   self._dbpasswd = passwd
 	   self._dbport = port
@@ -83,6 +83,21 @@ class Mysql_hanle(object):
 		except MySQLdb.Error,e:
 			print 'mysql error %d:%s'%(e.args[0],e.args[1])
 			self.reconnect()
+		finally:
+			self.cur.close()
+
+	def select_hash_info(self, id):
+		try:
+			self.cur=self.conn.cursor()
+			self.conn.select_db('dht')
+			sql="select * from hash_info where id="+str(id)
+			count=self.cur.execute(sql)
+			print "thers are %s row in table:"% count
+			result=self.cur.fetchone()
+			self.conn.commit()
+			return result
+		except MySQLdb.Error,e:
+			print 'mysql error %d:%s'%(e.args[0],e.args[1])
 		finally:
 			self.cur.close()
 
@@ -180,7 +195,8 @@ class Mysql_hanle(object):
 			self.cur=self.conn.cursor()
 			self.conn.select_db('dht')
 			words = '|'.join(wordlist)
-			sql="insert into hotwords(words,type, time) values('%s', '%s', '%s' )"% (words, wordtype, int(time.time()))
+
+			sql="insert into hotwords(words,type, time) values('%s', '%s', '%s' )"% (MySQLdb.escape_string(words), wordtype, int(time.time()))
 			self.cur.execute(sql)
 			self.conn.commit()
 		except MySQLdb.Error,e:
@@ -193,6 +209,7 @@ class Mysql_hanle(object):
 
 if(__name__ == '__main__'):
 	handler = Mysql_hanle()
+	print sys.getdefaultencoding()
 	opt,args = getopt.getopt(sys.argv[1:],'uck')
 	for o,v in opt:
 		if o in ['-u']:
@@ -200,7 +217,7 @@ if(__name__ == '__main__'):
 		elif o in ['-c']:
 			handler.create_database()
 		elif o in ['-k']:
-			handler.update_hot_words(1, ['我们', '你们 啊短发', '他们'])
+			handler.update_hot_words(1, [unicode(u'我们').encode("utf8"), '你们 啊短发', '他们'])
 	handler.close()
 
 	#handler.insert_info_hash_set("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
