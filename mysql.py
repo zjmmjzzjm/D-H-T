@@ -6,7 +6,7 @@ import getopt
 import sys
 
 class Mysql_hanle(object):
-	def __init__(self, user= 'root', passwd = '123', port = 3306):
+	def __init__(self, user= 'root', passwd = 'www271828', port = 3306):
 	   self._dbuser = user
 	   self._dbpasswd = passwd
 	   self._dbport = port

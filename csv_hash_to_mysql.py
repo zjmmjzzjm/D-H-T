@@ -13,7 +13,7 @@ if __name__ == "__main__":
 			infohash = row[0]
 			mysql_handler.insert_info_hash_set(infohash.upper())
 			i += 1
-			if i % 100 == 0:
+			if i % 400 == 0:
 				print "insert ", i, " rows "
 		except Exception,e:
 			print "exception : " + str(e)
